@@ -1,0 +1,143 @@
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>page</title>
+	<link href="bootstrap-3.3.5-dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="datetimepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet" media="screen">
+</head>
+	<div class="container" align="center">
+		<h3>test</h3>
+		<form class="form-horizontal">
+		  <div class="form-group">
+		    <label for="inputFromUrl" class="col-sm-2 control-label">from_url</label>
+		    <div class="col-sm-10">
+		      <input type="text" class="form-control" id="inputFromUrl">
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <label for="inputToUrl" class="col-sm-2 control-label">to_url</label>
+		    <div class="col-sm-10">
+		      <input type="text" class="form-control" id="inputToUrl">
+		    </div>
+		  </div>
+		  <div class="form-group">
+			<label for="fromdate" class="col-md-2 control-label">起始日期</label>
+            <div class="input-group date form_date col-md-10" data-date="" data-date-format="yyyymmdd">
+                <input id="fromdate" class="form-control" size="16" type="text" value="" readonly>
+                <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+			    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+            </div>
+		  </div>
+		  <div class="form-group">
+			<label for="fromdate" class="col-md-2 control-label">结束日期</label>
+            <div class="input-group date form_date col-md-10" data-date="" data-date-format="yyyymmdd">
+                <input id="todate" class="form-control" size="16" type="text" value="" readonly>
+                <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+			    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+            </div>
+		  <div class="form-group">
+		    <div class="checkbox">
+		    	<label>
+		    		<input id="checkcity" type="checkbox"> 区分城市
+		    	</label>
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <div class="col-sm-offset-2 col-sm-10">
+		      <a class="btn btn-default" onclick="formSubmit()">生成</a>
+		    </div>
+		  </div>
+		</form>
+		<form>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+					<textarea id="add" class="form-control" rows="15"></textarea>
+				</div>
+			</div>
+		</form>
+	</div>
+
+
+<script type="text/javascript" src="datetimepicker/jquery/jquery-1.12.3.min.js" charset="UTF-8"></script>
+<script type="text/javascript" src="bootstrap-3.3.5-dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="datetimepicker/js/bootstrap-datetimepicker.min.js" charset="UTF-8"></script>
+<script type="text/javascript" src="datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
+<script type="text/javascript">
+	$('.form_date').datetimepicker({
+        language:  'zh-CN',
+        weekStart: 1,
+        todayBtn:  1,
+		autoclose: 1,
+		todayHighlight: 1,
+		startView: 2,
+		minView: 2,
+		forceParse: 0
+    });
+</script>
+
+	<script>
+	var element=document.getElementById('add')
+	var myDate = new Date();
+
+	function copyit(){
+		var text = $("#add").val()
+		alert(text);
+		document.execCommand('copy')
+		$.copy(text);
+	}
+
+	function formSubmit() {  
+		/*验证tourl*/
+		var toUrl = document.getElementById("inputToUrl")
+		var text = toUrl.value;
+		var textValue1 = text.replace(/(^\s*)|(\s*$)/g, "");
+		if(textValue1==null || textValue1=="") {  
+        	alert("To_url 不可为空！");  
+        	return false;
+    	}  
+
+    	/*日期*/
+    	fromdateValue = $('#fromdate').datetimepicker().val();
+    	todateValue = $('#todate').datetimepicker().val();
+    	if(fromdateValue==null ||todateValue=="") {
+        	alert("日期不可为空！");  
+        	return false;
+    	}
+
+    	var fromUrl = document.getElementById("inputFromUrl");  
+    	text = fromUrl.value;  
+    	var textValue2 = text.replace(/(^\s*)|(\s*$)/g, "");
+    	if(textValue2==null || textValue2=="") {  
+    		if(document.getElementById("checkcity").checked){
+    			var sql= 
+    			"select\n  t2.city_name_cn city,\n  count(1) pv ,\n  count(distinct track_id) uv\n from\n  ods.traffic t1\nleft join\n  ods.dim_city t2\non t1.city_id=t2.city_id \nwhere dt >= '" 
+				+ fromdateValue + "' \n  and dt <= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"%' \ngroup by t2.city_name_cn"; 
+            	document.getElementById('add').innerHTML=sql
+            	return true
+        	}
+        	else{
+				var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom\n  ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"%'";
+            	document.getElementById('add').innerHTML=sql
+            	return true
+        	}
+    	}  
+
+        /*from_url to_url*/
+      	if(document.getElementById("checkcity").checked){
+			var sql= 
+			"select\n  t2.city_name_cn city,\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic t1 \n  left join ods.dim_city t2 \non t1.city_id=t2.city_id \nwhere dt >= '" 
+			+ fromdateValue + "'\n  and dt <= '" + todateValue + "'\n  and to_url like '%"+ textValue1 +"%' \n  and from_url like '%"+ textValue2 + "%' \ngroup by t2.city_name_cn"; 
+        	document.getElementById('add').innerHTML=sql
+        	return true
+    	}
+    	else{
+			var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"%' \n  and from_url like '%"+ textValue2 +"%'";  
+        	document.getElementById('add').innerHTML=sql
+        	return true
+    	}
+        return true;
+    }  
+</script>
+</html>
