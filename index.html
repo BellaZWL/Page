@@ -5,54 +5,59 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 	<title>page</title>
 	<link href="bootstrap-3.3.5-dist/css/bootstrap.min.css" rel="stylesheet" />
+	<link href="css/style.css" rel="stylesheet" />
     <link href="datetimepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet" media="screen">
 </head>
-	<div class="container" align="center">
-		<h3>test</h3>
-		<form class="form-horizontal">
+	<div class="container">
+		<div class="page-header">
+			<h2>SQL生成器</h2>
+			<small>只能计算百姓网内部流量，无法计算跳转到百姓网以外网站的流量，例如乐空空、大客户广告的外链</small>
+		</div>
+		<form class="form-horizontal" align="center">
 		  <div class="form-group">
-		    <label for="inputFromUrl" class="col-sm-2 control-label">from_url</label>
-		    <div class="col-sm-10">
+		    <label for="inputFromUrl" class="col-md-2 control-label">from_url</label>
+		    <div class="col-md-9">
 		      <input type="text" class="form-control" id="inputFromUrl">
 		    </div>
 		  </div>
 		  <div class="form-group">
-		    <label for="inputToUrl" class="col-sm-2 control-label">to_url</label>
-		    <div class="col-sm-10">
+		    <label for="inputToUrl" class="col-md-2 control-label">to_url</label>
+		    <div class="col-md-9">
 		      <input type="text" class="form-control" id="inputToUrl">
 		    </div>
 		  </div>
 		  <div class="form-group">
 			<label for="fromdate" class="col-md-2 control-label">起始日期</label>
-            <div class="input-group date form_date col-md-10" data-date="" data-date-format="yyyymmdd">
-                <input id="fromdate" class="form-control" size="16" type="text" value="" readonly>
+            <div class="input-group date form_date col-md-9" data-date="" data-date-format="yyyymmdd">
+                <input id="fromdate" class="form-control" size="16" type="text" value=""  disabled>
                 <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
 			    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
             </div>
 		  </div>
 		  <div class="form-group">
 			<label for="fromdate" class="col-md-2 control-label">结束日期</label>
-            <div class="input-group date form_date col-md-10" data-date="" data-date-format="yyyymmdd">
-                <input id="todate" class="form-control" size="16" type="text" value="" readonly>
+            <div class="input-group date form_date col-md-9" data-date="" data-date-format="yyyymmdd">
+                <input id="todate" class="form-control" size="16" type="text" value="" disabled>
                 <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
 			    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
             </div>
 		  <div class="form-group">
-		    <div class="checkbox">
+		    <div class="checkbox col-sm-offset-2 col-sm-9">
 		    	<label>
 		    		<input id="checkcity" type="checkbox"> 区分城市
 		    	</label>
 		    </div>
 		  </div>
 		  <div class="form-group">
-		    <div class="col-sm-offset-2 col-sm-10">
+		    <div class="col-sm-offset-2 col-sm-9">
 		      <a class="btn btn-default" onclick="formSubmit()">生成</a>
+		      <a id="add-btn"class="btn btn-primary" data-clipboard-target="#add">复制</a>
 		    </div>
 		  </div>
 		</form>
 		<form>
 			<div class="form-group">
-				<div class="col-sm-offset-2 col-sm-10">
+				<div class="col-sm-offset-2 col-sm-9">
 					<textarea id="add" class="form-control" rows="15"></textarea>
 				</div>
 			</div>
@@ -63,10 +68,11 @@
 <script type="text/javascript" src="datetimepicker/jquery/jquery-1.12.3.min.js" charset="UTF-8"></script>
 <script type="text/javascript" src="bootstrap-3.3.5-dist/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="datetimepicker/js/bootstrap-datetimepicker.min.js" charset="UTF-8"></script>
+<script type="text/javascript" src="js/clipboard.min.js" charset="UTF-8"></script>
 <script type="text/javascript" src="datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
 <script type="text/javascript">
 	$('.form_date').datetimepicker({
-        language:  'zh-CN',
+		language:'zh-CN',
         weekStart: 1,
         todayBtn:  1,
 		autoclose: 1,
@@ -77,17 +83,13 @@
     });
 </script>
 
-	<script>
+	<script type="text/javascript">
+	var clipboard = new Clipboard('#add-btn');
+	</script>
+
+	<script type="text/javascript">
 	var element=document.getElementById('add')
 	var myDate = new Date();
-
-	function copyit(){
-		var text = $("#add").val()
-		alert(text);
-		document.execCommand('copy')
-		$.copy(text);
-	}
-
 	function formSubmit() {  
 		/*验证tourl*/
 		var toUrl = document.getElementById("inputToUrl")
@@ -113,12 +115,12 @@
     		if(document.getElementById("checkcity").checked){
     			var sql= 
     			"select\n  t2.city_name_cn city,\n  count(1) pv ,\n  count(distinct track_id) uv\n from\n  ods.traffic t1\nleft join\n  ods.dim_city t2\non t1.city_id=t2.city_id \nwhere dt >= '" 
-				+ fromdateValue + "' \n  and dt <= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"%' \ngroup by t2.city_name_cn"; 
+				+ fromdateValue + "' \n  and dt <= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"' \ngroup by t2.city_name_cn"; 
             	document.getElementById('add').innerHTML=sql
             	return true
         	}
         	else{
-				var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom\n  ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"%'";
+				var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom\n  ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"'";
             	document.getElementById('add').innerHTML=sql
             	return true
         	}
@@ -128,12 +130,12 @@
       	if(document.getElementById("checkcity").checked){
 			var sql= 
 			"select\n  t2.city_name_cn city,\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic t1 \n  left join ods.dim_city t2 \non t1.city_id=t2.city_id \nwhere dt >= '" 
-			+ fromdateValue + "'\n  and dt <= '" + todateValue + "'\n  and to_url like '%"+ textValue1 +"%' \n  and from_url like '%"+ textValue2 + "%' \ngroup by t2.city_name_cn"; 
+			+ fromdateValue + "'\n  and dt <= '" + todateValue + "'\n  and to_url like '%"+ textValue1 +"' \n  and from_url like '%"+ textValue2 + "' \ngroup by t2.city_name_cn"; 
         	document.getElementById('add').innerHTML=sql
         	return true
     	}
     	else{
-			var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"%' \n  and from_url like '%"+ textValue2 +"%'";  
+			var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"' \n  and from_url like '%"+ textValue2 +"'";  
         	document.getElementById('add').innerHTML=sql
         	return true
     	}
