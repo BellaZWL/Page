@@ -15,15 +15,15 @@
 		</div>
 		<form class="form-horizontal" align="center">
 		  <div class="form-group">
-		    <label for="inputFromUrl" class="col-md-2 control-label">from_url</label>
+		    <label for="inputFromUrl" class="col-md-2 control-label" >from_url</label>
 		    <div class="col-md-9">
-		      <input type="text" class="form-control" id="inputFromUrl">
+		      <input type="text" class="form-control" id="inputFromUrl" style="text-transform:lowercase;" />
 		    </div>
 		  </div>
 		  <div class="form-group">
 		    <label for="inputToUrl" class="col-md-2 control-label">to_url</label>
 		    <div class="col-md-9">
-		      <input type="text" class="form-control" id="inputToUrl">
+		      <input type="text" class="form-control" id="inputToUrl" style="text-transform:lowercase;">
 		    </div>
 		  </div>
 		  <div class="form-group">
@@ -45,6 +45,9 @@
 		    <div class="checkbox col-sm-offset-2 col-sm-9">
 		    	<label>
 		    		<input id="checkcity" type="checkbox"> 区分城市
+		    	</label>
+		    	<label>
+		    		<input id="checkdate" type="checkbox"> 区分时间
 		    	</label>
 		    </div>
 		  </div>
@@ -113,31 +116,63 @@
     	var textValue2 = text.replace(/(^\s*)|(\s*$)/g, "");
     	if(textValue2==null || textValue2=="") {  
     		if(document.getElementById("checkcity").checked){
-    			var sql= 
-    			"select\n  t2.city_name_cn city,\n  count(1) pv ,\n  count(distinct track_id) uv\n from\n  ods.traffic t1\nleft join\n  ods.dim_city t2\non t1.city_id=t2.city_id \nwhere dt >= '" 
-				+ fromdateValue + "' \n  and dt <= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"' \ngroup by t2.city_name_cn"; 
-            	document.getElementById('add').innerHTML=sql
-            	return true
+    			if(document.getElementById("checkdate").checked){
+    				var sql=
+    				"select\n  dt,\n  t2.city_name_cn city,\n  count(1) pv ,\n  count(distinct track_id) uv\n from\n  ods.traffic t1\nleft join\n  ods.dim_city t2\non t1.city_id=t2.city_id \nwhere dt >= '" 
+					+ fromdateValue + "' \n  and dt <= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"' \ngroup by t2.city_name_cn,dt"; 
+					document.getElementById('add').innerHTML=sql
+            		return true
+    			}
+    			else{
+    				var sql= 
+    				"select\n  t2.city_name_cn city,\n  count(1) pv ,\n  count(distinct track_id) uv\n from\n  ods.traffic t1\nleft join\n  ods.dim_city t2\non t1.city_id=t2.city_id \nwhere dt >= '" 
+					+ fromdateValue + "' \n  and dt <= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"' \ngroup by t2.city_name_cn"; 
+            		document.getElementById('add').innerHTML=sql
+            		return true
+            	}
         	}
         	else{
-				var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom\n  ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"'";
-            	document.getElementById('add').innerHTML=sql
-            	return true
+        		if(document.getElementById("checkdate").checked){
+            		var sql= "select\n  dt,\n  count(1) pv,\n  count(distinct track_id) uv \nfrom\n  ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"' \ngroup by dt";
+            		document.getElementById('add').innerHTML=sql
+            		return true
+        		}
+        		else{
+					var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom\n  ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"'";
+            		document.getElementById('add').innerHTML=sql
+            		return true
+            	}
         	}
     	}  
 
         /*from_url to_url*/
       	if(document.getElementById("checkcity").checked){
-			var sql= 
-			"select\n  t2.city_name_cn city,\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic t1 \n  left join ods.dim_city t2 \non t1.city_id=t2.city_id \nwhere dt >= '" 
-			+ fromdateValue + "'\n  and dt <= '" + todateValue + "'\n  and to_url like '%"+ textValue1 +"' \n  and from_url like '%"+ textValue2 + "' \ngroup by t2.city_name_cn"; 
-        	document.getElementById('add').innerHTML=sql
-        	return true
+      		if(document.getElementById("checkdate").checked){
+				var sql= 
+				"select\n  dt,\n  t2.city_name_cn city,\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic t1 \n  left join ods.dim_city t2 \non t1.city_id=t2.city_id \nwhere dt >= '" 
+				+ fromdateValue + "'\n  and dt <= '" + todateValue + "'\n  and to_url like '%"+ textValue1 +"' \n  and from_url like '%"+ textValue2 + "' \ngroup by t2.city_name_cn,dt"; 
+        		document.getElementById('add').innerHTML=sql
+        		return true
+        	}
+        	else{
+				var sql= 
+				"select\n  t2.city_name_cn city,\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic t1 \n  left join ods.dim_city t2 \non t1.city_id=t2.city_id \nwhere dt >= '" 
+				+ fromdateValue + "'\n  and dt <= '" + todateValue + "'\n  and to_url like '%"+ textValue1 +"' \n  and from_url like '%"+ textValue2 + "' \ngroup by t2.city_name_cn"; 
+        		document.getElementById('add').innerHTML=sql
+        		return true
+        	}
     	}
     	else{
-			var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"' \n  and from_url like '%"+ textValue2 +"'";  
-        	document.getElementById('add').innerHTML=sql
-        	return true
+      		if(document.getElementById("checkdate").checked){
+				var sql= "select\n  dt,\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"' \n  and from_url like '%"+ textValue2 +"' \ngroup by dt";  
+        		document.getElementById('add').innerHTML=sql
+        		return true
+        	}
+        	else{
+				var sql= "select\n  count(1) pv,\n  count(distinct track_id) uv \nfrom ods.traffic \nwhere dt >= '" + fromdateValue + "' \n  and dt<= '" + todateValue + "' \n  and to_url like '%"+ textValue1 +"' \n  and from_url like '%"+ textValue2 +"'";  
+        		document.getElementById('add').innerHTML=sql
+        		return true
+        	}
     	}
         return true;
     }  
